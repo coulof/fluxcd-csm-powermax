@@ -1,0 +1,11 @@
+bases:
+  - ../../../base
+  - namespace.yaml
+
+patches:
+  - path: patch_storageClass.yaml
+    target:
+      kind: PersistentVolumeClaim
+      name: .*
+
+namespace: dev

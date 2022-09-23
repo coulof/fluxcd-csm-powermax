@@ -1,0 +1,80 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name:  csirevproxy-tls
+  namespace: powermax
+spec:
+  secretName: csirevproxy-tls-secret
+  commonName: powermax-reverseproxy
+  dnsNames:
+    - powermax-reverseproxy
+    - powermax-reverseproxy.powermax.svc.cluster.local
+    - reverseproxy
+  duration: 2160h # 90d
+  renewBefore: 360h # 15d
+  isCA: false
+  subject:
+    organizations:
+      - dellemc
+  issuerRef:
+    name: selfsigned-cluster-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+# TODO is it really a good idea since most of the fields are immutable ?
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: powermax-841
+parameters:
+  SRP: SRP_1
+  SYMID: "000000000841"
+  ServiceLevel: Platinum
+provisioner: csi-powermax.dellemc.com
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+allowedTopologies:
+  - matchLabelExpressions:
+      - key: csi-powermax.dellemc.com/000000000841
+        values:
+          - csi-powermax.dellemc.com
+      - key: csi-powermax.dellemc.com/000000000841.fc
+        values:
+          - csi-powermax.dellemc.com
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: powermax-448
+parameters:
+  SRP: SRP_1
+  SYMID: "000000000448"
+  ServiceLevel: Platinum
+provisioner: csi-powermax.dellemc.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate 
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: powermax-srdf
+parameters:
+  SRP: SRP_1
+  replication.storage.dell.com/RemoteSRP: SRP_1
+  SYMID: "000000000448"
+  replication.storage.dell.com/RemoteSYMID: "000000000841"
+  ServiceLevel: Platinum
+  replication.storage.dell.com/isReplicationEnabled: "true"
+  replication.storage.dell.com/RemoteServiceLevel: Platinum
+  replication.storage.dell.com/RdfMode: METRO
+  replication.storage.dell.com/Bias: "true"
+  replication.storage.dell.com/RdfGroup: "123"
+  replication.storage.dell.com/RemoteRDFGroup: "123"
+  replication.storage.dell.com/remoteStorageClassName: powermax-replication
+  replication.storage.dell.com/remoteClusterID: self
+provisioner: csi-powermax.dellemc.com
+reclaimPolicy: Delete
+volumeBindingMode: Immediate

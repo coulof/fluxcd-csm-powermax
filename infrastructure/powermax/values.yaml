@@ -1,0 +1,44 @@
+
+global:
+  storageArrays:
+    - storageArrayId: "000000000448"
+      endpoint: https://10.0.0.205:8443
+
+    - storageArrayId: "000000000841"
+      endpoint: https://10.0.0.205:8443
+
+  managementServers:
+    - endpoint: https://10.0.0.205:8443
+      credentialsSecret: powermax-creds
+      skipCertificateValidation: true
+
+version: "v2.4.0"
+
+controller:
+  controllerCount: 1
+  volumeNamePrefix: rke-prod
+
+  healthMonitor:
+    enabled: true
+
+node:
+  healthMonitor:
+    enabled: true
+
+csireverseproxy:
+  enabled: true
+  image: gcr.io/devcon-anthos/dellemc/csipowermax-reverseproxy:v2.4.0.000R-420
+  tlsSecret: csirevproxy-tls-secret
+  deployAsSidecar: true
+  port: 2222
+  mode: StandAlone
+
+clusterPrefix: k8s
+transportProtocol: ""
+modifyHostName: "true"
+
+replication:
+  enabled: true
+  image: dellemc/dell-csi-replicator:v1.3.0
+  replicationContextPrefix: "powermax"
+  replicationPrefix: "replication.storage.dell.com"

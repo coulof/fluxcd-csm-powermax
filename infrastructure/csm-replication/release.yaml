@@ -1,0 +1,35 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: GitRepository
+metadata:
+  name: csm-replication
+  namespace: flux-system
+spec:
+  interval: 1m
+  url: https://github.com/dell/csm-replication/
+  ref:
+    tag: v1.3.0
+  ignore: |
+    # exclude all
+    /*
+    # include charts directory
+    !helm/
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: replication
+  namespace: flux-system
+spec:
+  interval: 5m
+  releaseName: replication
+  targetNamespace: dell-replication-controller
+  chart:
+    spec:
+# TODO validate that path works
+      chart: helm/csm-replication
+      version: '1.3.0'
+      sourceRef:
+        kind: GitRepository
+        name: csm-replication
+      interval: 1m

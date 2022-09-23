@@ -1,0 +1,7 @@
+# Deployment file has been obtained with curl -LO https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+# TODO replace with helm installer : https://cert-manager.io/docs/installation/helm/#1-add-the-helm-repository
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - cert-manager.yaml
+  - cluster-issuer.yaml

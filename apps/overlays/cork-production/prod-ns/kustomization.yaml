@@ -1,0 +1,15 @@
+bases:
+  - ../../../base
+  - namespace.yaml
+
+replicas:
+- name: clock-gitops
+  count: 1
+
+patches:
+  - path: patch_StorageClass.yaml
+    target:
+      kind: PersistentVolumeClaim
+      name: .*
+
+namespace: prod

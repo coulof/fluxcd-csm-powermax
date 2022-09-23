@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: clock-gitops
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: clock-gitops
+spec:
+  serviceName: "clock-gitops"
+  selector:
+    matchLabels:
+      app: clock-gitops
+  template:
+    metadata:
+      labels:
+        app: clock-gitops
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: clock-gitops
+      serviceAccount: clock-gitops
+      replicas: 1
+      hostNetwork: true
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 2000
+        fsGroup: 2000
+      containers:
+        - name: test
+          image: docker.io/coulof/clock:user
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: LOG
+              value: /data0/x
+          volumeMounts:
+            - mountPath: "/data0"
+              name: pvol0
+      volumes:
+        - name: pvol0
+          persistentVolumeClaim:
+            claimName: pvol0
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvol0
+spec:
+  accessModes:
+    - ReadWriteMany
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: 8Gi
+  storageClassName: default
